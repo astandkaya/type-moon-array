@@ -1,0 +1,35 @@
+{
+    "name": "astandkaya/type-moon-array",
+    "type": "library",
+    "description": "Make html by PHP",
+    "keywords": [
+        "type-moon-array"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ast."
+        }
+    ],
+    "require": {
+        "php": ">=8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "phpstan/phpstan": "^1.9.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "TypeMoonArray\\": "src/TypeMoonArray"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse"
+    }
+}
