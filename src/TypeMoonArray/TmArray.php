@@ -18,7 +18,7 @@ use TypeMoonArray\Utility\Reflection;
 
 class TmArray
 {
-    private array $standard_types = [
+    private array $std_type_alias = [
         'bool'      => \TypeMoonArray\Types\StdBoolean::class,
         'int'       => \TypeMoonArray\Types\StdInteger::class,
         'float'     => \TypeMoonArray\Types\StdFloat::class,
@@ -32,7 +32,7 @@ class TmArray
     private array $writable_check_methods;
 
     function __construct(
-        protected string $type,
+        protected \Closure|string $type,
         protected array $array = [],
         protected bool $is_writable = true,
     ) {
@@ -41,7 +41,9 @@ class TmArray
             WritableCheck::class,
         );
 
-        $this->initialize( $this->type );
+        if ( is_string( $this->type ) ) $this->type = $this->convertStringToType( $this->type );
+
+        $this->normalizeElements();
     }
 
     public function __call( string $method, mixed $args) : ?array
@@ -55,13 +57,6 @@ class TmArray
     }
 
 
-    public function initialize( string $type ) : void
-    {
-        $this->type = $this->convertStringToType( $type );
-        $this->normalizeElements();
-    }
-
-
     public function get( ?string $key = null ) : mixed
     {
         return is_null($key) ? $this->array : $this->array[$key];
@@ -72,9 +67,9 @@ class TmArray
         return array_keys( $this->array );
     }
 
-    public function getStandardTypeList() : array
+    public function getStdTypeAlias() : array
     {
-        return array_keys( $this->standard_types );
+        return array_keys( $this->std_type_alias );
     }
 
 
@@ -88,7 +83,9 @@ class TmArray
     #[Publish, WritableCheck]
     private function convertType( string $type ) : void
     {
-        $this->initialize( $type );
+        $this->type = $this->convertStringToType( $type );
+
+        $this->normalizeElements();
     }
 
     #[Publish, WritableCheck]
@@ -140,23 +137,17 @@ class TmArray
     }
 
 
-
     private function isStandardType( ?string $type = null ) : bool
     {
-        return in_array( $type ?? $this->type, $this->standard_types );
-    }
-
-    private function isStandardTypeAtKey( ?string $type = null ) : bool
-    {
-        return in_array( $type ?? $this->type, array_keys($this->standard_types) );
+        return in_array( $type ?? $this->type, array_keys($this->std_type_alias) );
     }
 
 
     private function convertStringToType( string $type ) : string
     {
-        $type = $this->isStandardTypeAtKey( $type ) ? $this->standard_types[$type] : $type;
+        $type = $this->isStandardType( $type ) ? $this->std_type_alias[$type] : $type;
 
-        class_exists($type) || interface_exists($type) ?: throw new ClassNotFoundException($type);
+        class_exists( $type ) && is_a(new $type, Type::class) ?: throw new ClassNotFoundException($type);
 
         return $type;
     }
@@ -171,23 +162,23 @@ class TmArray
 
     private function normalizeElement( mixed $element ) : mixed
     {
-        if ( $this->isStandardType() ) {
-            return $this->normalizeStandardElement( $element );
+        if ( is_string($this->type) ) {
+            return $this->normalizeType( $element, $this->type );
         }
 
-        return $this->normalizeUserClassElement( $element );
+        return $this->normalizeClosure( $element, $this->type );
     }
 
-    private function normalizeStandardElement( mixed $element ) : mixed
+    private function normalizeType( mixed $element, string $type ) : mixed
     {
-        $this->type::checkType( $element ) ?: throw new DenyTypeException;
+        $type::checkType( $element ) ?: throw new DenyTypeException;
 
-        return $this->type::normalizeType( $element );
+        return $type::normalizeType( $element );
     }
 
-    private function normalizeUserClassElement( mixed $element ) : mixed
+    private function normalizeClosure( mixed $element, \Closure $type ) : mixed
     {
-        is_a( $element, $this->type) ?: throw new DenyTypeException;
+        $type( $element ) ?: throw new DenyTypeException;
         
         return $element;
     }
