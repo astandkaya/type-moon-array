@@ -1,7 +1,7 @@
 {
     "name": "astandkaya/type-moon-array",
     "type": "library",
-    "description": "Make html by PHP",
+    "description": "This library provides wrapper classes for arrays that allow you to specify element types and conditions.",
     "keywords": [
         "type-moon-array"
     ],
