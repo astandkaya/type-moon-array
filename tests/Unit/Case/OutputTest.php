@@ -80,7 +80,7 @@ class OutputTest extends TestCase
 
         $this->assertEquals(
             $list,
-            $tm_array->getStandardTypeList(),
+            $tm_array->getStdTypeAlias(),
         );
     }
 }
