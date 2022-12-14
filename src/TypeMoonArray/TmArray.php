@@ -31,7 +31,7 @@ class TmArray
 
     private array $writable_check_methods;
 
-    function __construct(
+    public function __construct(
         protected \Closure|string $type,
         protected array $array = [],
         protected bool $is_writable = true,
@@ -41,118 +41,120 @@ class TmArray
             WritableCheck::class,
         );
 
-        if ( is_string( $this->type ) ) $this->type = $this->convertStringToType( $this->type );
+        if (is_string($this->type)) {
+            $this->type = $this->convertStringToType($this->type);
+        }
 
         $this->normalizeElements();
     }
 
-    public function __call( string $method, mixed $args) : ?array
+    public function __call(string $method, mixed $args): ?array
     {
-        if ( in_array( $method, $this->writable_check_methods ) ) {
-            $this->is_writable ?: throw new NotWritableException;
-            return $this->{$method}( ...$args );
+        if (in_array($method, $this->writable_check_methods)) {
+            $this->is_writable ?: throw new NotWritableException();
+            return $this->{$method}(...$args);
         }
 
-        throw new MethodNotFoundException( $method );
+        throw new MethodNotFoundException($method);
     }
 
 
-    public function get( ?string $key = null ) : mixed
+    public function get(?string $key = null): mixed
     {
         return is_null($key) ? $this->array : $this->array[$key];
     }
 
-    public function getKeys() : array
+    public function getKeys(): array
     {
-        return array_keys( $this->array );
+        return array_keys($this->array);
     }
 
-    public function getStdTypeAlias() : array
+    public function getStdTypeAlias(): array
     {
-        return array_keys( $this->std_type_alias );
+        return array_keys($this->std_type_alias);
     }
 
 
-    private function collectMethods( string ...$attribute ) : array
+    private function collectMethods(string ...$attribute): array
     {
-        $reflection = new Reflection( $this );
-        return [ ...$reflection->getMethodsWithAttribute( ...$attribute ) ];
+        $reflection = new Reflection($this);
+        return [ ...$reflection->getMethodsWithAttribute(...$attribute) ];
     }
 
 
     #[Publish, WritableCheck]
-    private function convertType( string $type ) : void
+    private function convertType(string $type): void
     {
-        $this->type = $this->convertStringToType( $type );
+        $this->type = $this->convertStringToType($type);
 
         $this->normalizeElements();
     }
 
     #[Publish, WritableCheck]
-    private function closure( \Closure|string $func, mixed ...$args ) : array
+    private function closure(\Closure|string $func, mixed ...$args): array
     {
-        !(is_string( $func ) && !function_exists( $func )) ?: throw new FunctionNotFoundException( $func );
+        !(is_string($func) && !function_exists($func)) ?: throw new FunctionNotFoundException($func);
 
-        $this->array = $func( $this->array, ...$args );
-        $this->normalizeElements();
-
-        return $this->array;
-    }
-
-    #[Publish, WritableCheck]
-    private function closureRef( \Closure|string $func, mixed ...$args ) : array
-    {
-        !(is_string( $func ) && !function_exists( $func )) ?: throw new FunctionNotFoundException( $func );
-
-        $func( $this->array, ...$args );
+        $this->array = $func($this->array, ...$args);
         $this->normalizeElements();
 
         return $this->array;
     }
 
+    #[Publish, WritableCheck]
+    private function closureRef(\Closure|string $func, mixed ...$args): array
+    {
+        !(is_string($func) && !function_exists($func)) ?: throw new FunctionNotFoundException($func);
+
+        $func($this->array, ...$args);
+        $this->normalizeElements();
+
+        return $this->array;
+    }
+
 
     #[Publish, WritableCheck]
-    private function push( mixed $value, ?string $key = null ) : void
+    private function push(mixed $value, ?string $key = null): void
     {
         $this->array = array_merge(
             $this->array,
-            $this->genArrayToMerge( $value, $key ),
+            $this->genArrayToMerge($value, $key),
         );
     }
 
     #[Publish, WritableCheck]
-    private function unshift( mixed $value, ?string $key = null ) : void
+    private function unshift(mixed $value, ?string $key = null): void
     {
         $this->array = array_merge(
-            $this->genArrayToMerge( $value, $key ),
+            $this->genArrayToMerge($value, $key),
             $this->array,
         );
     }
 
-    private function genArrayToMerge( mixed $value, ?string $key = null ) : array
+    private function genArrayToMerge(mixed $value, ?string $key = null): array
     {
-        $value = $this->normalizeElement( $value );
+        $value = $this->normalizeElement($value);
 
         return is_null($key) ? [ $value ] : [ $key => $value ];
     }
 
 
-    private function isStandardType( ?string $type = null ) : bool
+    private function isStandardType(?string $type = null): bool
     {
-        return in_array( $type ?? $this->type, array_keys($this->std_type_alias) );
+        return in_array($type ?? $this->type, array_keys($this->std_type_alias));
     }
 
 
-    private function convertStringToType( string $type ) : string
+    private function convertStringToType(string $type): string
     {
-        $type = $this->isStandardType( $type ) ? $this->std_type_alias[$type] : $type;
+        $type = $this->isStandardType($type) ? $this->std_type_alias[$type] : $type;
 
-        class_exists( $type ) && is_a(new $type, Type::class) ?: throw new ClassNotFoundException($type);
+        class_exists($type) && is_a(new $type(), Type::class) ?: throw new ClassNotFoundException($type);
 
         return $type;
     }
 
-    private function normalizeElements() : void
+    private function normalizeElements(): void
     {
         $this->array = array_map(
             fn ($e) => $this->normalizeElement($e),
@@ -160,26 +162,26 @@ class TmArray
         );
     }
 
-    private function normalizeElement( mixed $element ) : mixed
+    private function normalizeElement(mixed $element): mixed
     {
-        if ( is_string($this->type) ) {
-            return $this->normalizeType( $element, $this->type );
+        if (is_string($this->type)) {
+            return $this->normalizeType($element, $this->type);
         }
 
-        return $this->normalizeClosure( $element, $this->type );
+        return $this->normalizeClosure($element, $this->type);
     }
 
-    private function normalizeType( mixed $element, string $type ) : mixed
+    private function normalizeType(mixed $element, string $type): mixed
     {
-        $type::checkType( $element ) ?: throw new DenyTypeException;
+        $type::checkType($element) ?: throw new DenyTypeException();
 
-        return $type::normalizeType( $element );
+        return $type::normalizeType($element);
     }
 
-    private function normalizeClosure( mixed $element, \Closure $type ) : mixed
+    private function normalizeClosure(mixed $element, \Closure $type): mixed
     {
-        $type( $element ) ?: throw new DenyTypeException;
-        
+        $type($element) ?: throw new DenyTypeException();
+
         return $element;
     }
 }

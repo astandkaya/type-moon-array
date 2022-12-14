@@ -4,16 +4,16 @@ namespace TypeMoonArray\Types;
 
 class StdObject implements Type
 {
-    function __construct(
-    ) {
-    }
-
-    public static function checkType( mixed $variable ) : bool
+    public function __construct()
     {
-        return is_object( $variable );
     }
 
-    public static function normalizeType( mixed $variable ) : mixed
+    public static function checkType(mixed $variable): bool
+    {
+        return is_object($variable);
+    }
+
+    public static function normalizeType(mixed $variable): mixed
     {
         return $variable;
     }
