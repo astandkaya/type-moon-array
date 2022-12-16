@@ -1,0 +1,23 @@
+name: PHP Unit
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: phpunit
+      run: |
+        php -v
+        cd app
+        docker-compose up -d
+        composer install
+        docker-compose exec -T php bash -c "composer test"
