@@ -29,6 +29,7 @@ class TmArray
         'mixed'     => \TypeMoonArray\Types\StdMixed::class,
     ];
 
+    private Reflection $reflection;
     private array $writable_check_methods;
 
     public function __construct(
@@ -36,10 +37,7 @@ class TmArray
         protected array $array = [],
         protected bool $is_writable = true,
     ) {
-        $this->writable_check_methods = $this->collectMethods(
-            Publish::class,
-            WritableCheck::class,
-        );
+        $this->collectMethods();
 
         if (is_string($this->type)) {
             $this->type = $this->convertStringToType($this->type);
@@ -58,6 +56,16 @@ class TmArray
         throw new MethodNotFoundException($method);
     }
 
+    private function collectMethods(): void
+    {
+        $this->reflection = new Reflection($this);
+
+        $this->writable_check_methods = $this->reflection->collectMethods(
+            Publish::class,
+            WritableCheck::class,
+        );
+    }
+
 
     public function get(?string $key = null): mixed
     {
@@ -72,13 +80,6 @@ class TmArray
     public function getStdTypeAlias(): array
     {
         return array_keys($this->std_type_alias);
-    }
-
-
-    private function collectMethods(string ...$attribute): array
-    {
-        $reflection = new Reflection($this);
-        return [ ...$reflection->getMethodsWithAttribute(...$attribute) ];
     }
 
 
