@@ -37,12 +37,7 @@ class TmArray
         protected array $array = [],
         protected bool $is_writable = true,
     ) {
-        $this->reflection = new Reflection($this);
-
-        $this->writable_check_methods = $this->reflection->collectMethods(
-            Publish::class,
-            WritableCheck::class,
-        );
+        $this->collectMethods();
 
         if (is_string($this->type)) {
             $this->type = $this->convertStringToType($this->type);
@@ -59,6 +54,16 @@ class TmArray
         }
 
         throw new MethodNotFoundException($method);
+    }
+
+    private function collectMethods(): void
+    {
+        $this->reflection = new Reflection($this);
+
+        $this->writable_check_methods = $this->reflection->collectMethods(
+            Publish::class,
+            WritableCheck::class,
+        );
     }
 
 
