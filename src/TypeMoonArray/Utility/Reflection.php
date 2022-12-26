@@ -22,10 +22,10 @@ class Reflection
 
     public function collectMethods(string ...$attribute): array
     {
-        return [ ...$this->getMethodsWithAttribute(...$attribute) ];
+        return [ ...$this->fetchMethodsWithAttribute(...$attribute) ];
     }
 
-    public function getMethodsWithAttribute(string ...$attribute_names): iterable
+    public function fetchMethodsWithAttribute(string ...$attribute_names): iterable
     {
         $methods = $this->method_to_attributes;
 
