@@ -13,6 +13,7 @@ use TypeMoonArray\Exceptions\{
     FunctionNotFoundException,
     MethodNotFoundException,
     NotWritableException,
+    DenyOverwriteAliasException,
 };
 use TypeMoonArray\Utility\Reflection;
 
