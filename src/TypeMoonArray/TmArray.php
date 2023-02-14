@@ -30,6 +30,7 @@ class TmArray
     ];
 
     private static ?Reflection $reflection = null;
+    private static ?array $publish_methods = null;
     private static ?array $writable_check_methods = null;
 
     public function __construct(
@@ -37,6 +38,7 @@ class TmArray
         protected array $array = [],
         protected bool $is_writable = true,
     ) {
+        $this->collectMethods('publish_methods', [Publish::class]);
         $this->collectMethods('writable_check_methods', [Publish::class, WritableCheck::class]);
 
         if (is_string($this->type)) {
