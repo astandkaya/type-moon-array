@@ -66,6 +66,25 @@ class TmArray
     }
 
 
+    public static function registerTypeAlias(string $key, string $type, bool $overwrite = false): void
+    {
+        !(!$overwrite && in_array($key, self::getTypeAliasKeys())) ?: throw new DenyOverwriteAliasException($key);
+        class_exists($type) && is_a(new $type(), Type::class) ?: throw new DenyTypeException();
+
+        self::$std_type_alias = array_merge(self::$std_type_alias, [$key => $type]);
+    }
+
+    public static function getTypeAlias(): array
+    {
+        return self::$std_type_alias;
+    }
+
+    public static function getTypeAliasKeys(): array
+    {
+        return array_keys(self::$std_type_alias);
+    }
+
+
     public function get(?string $key = null): mixed
     {
         return is_null($key) ? $this->array : $this->array[$key];
