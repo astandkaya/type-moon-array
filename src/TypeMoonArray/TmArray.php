@@ -13,12 +13,13 @@ use TypeMoonArray\Exceptions\{
     FunctionNotFoundException,
     MethodNotFoundException,
     NotWritableException,
+    DenyOverwriteAliasException,
 };
 use TypeMoonArray\Utility\Reflection;
 
 class TmArray
 {
-    private array $std_type_alias = [
+    private static array $std_type_alias = [
         'bool'      => \TypeMoonArray\Types\StdBoolean::class,
         'int'       => \TypeMoonArray\Types\StdInteger::class,
         'float'     => \TypeMoonArray\Types\StdFloat::class,
@@ -65,6 +66,25 @@ class TmArray
     }
 
 
+    public static function registerTypeAlias(string $key, string $type, bool $overwrite = false): void
+    {
+        !(!$overwrite && in_array($key, self::getTypeAliasKeys())) ?: throw new DenyOverwriteAliasException($key);
+        class_exists($type) && is_a(new $type(), Type::class) ?: throw new DenyTypeException();
+
+        self::$std_type_alias = array_merge(self::$std_type_alias, [$key => $type]);
+    }
+
+    public static function getTypeAlias(): array
+    {
+        return self::$std_type_alias;
+    }
+
+    public static function getTypeAliasKeys(): array
+    {
+        return array_keys(self::$std_type_alias);
+    }
+
+
     public function get(?string $key = null): mixed
     {
         return is_null($key) ? $this->array : $this->array[$key];
@@ -73,11 +93,6 @@ class TmArray
     public function getKeys(): array
     {
         return array_keys($this->array);
-    }
-
-    public function getStdTypeAlias(): array
-    {
-        return array_keys($this->std_type_alias);
     }
 
 
@@ -140,13 +155,13 @@ class TmArray
 
     private function isStandardType(?string $type = null): bool
     {
-        return in_array($type ?? $this->type, array_keys($this->std_type_alias));
+        return in_array($type ?? $this->type, array_keys(self::$std_type_alias));
     }
 
 
     private function convertStringToType(string $type): string
     {
-        $type = $this->isStandardType($type) ? $this->std_type_alias[$type] : $type;
+        $type = $this->isStandardType($type) ? self::$std_type_alias[$type] : $type;
 
         class_exists($type) && is_a(new $type(), Type::class) ?: throw new ClassNotFoundException($type);
 
