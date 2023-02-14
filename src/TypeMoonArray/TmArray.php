@@ -18,7 +18,7 @@ use TypeMoonArray\Utility\Reflection;
 
 class TmArray
 {
-    private array $std_type_alias = [
+    private static array $std_type_alias = [
         'bool'      => \TypeMoonArray\Types\StdBoolean::class,
         'int'       => \TypeMoonArray\Types\StdInteger::class,
         'float'     => \TypeMoonArray\Types\StdFloat::class,
@@ -135,13 +135,13 @@ class TmArray
 
     private function isStandardType(?string $type = null): bool
     {
-        return in_array($type ?? $this->type, array_keys($this->std_type_alias));
+        return in_array($type ?? $this->type, array_keys(self::$std_type_alias));
     }
 
 
     private function convertStringToType(string $type): string
     {
-        $type = $this->isStandardType($type) ? $this->std_type_alias[$type] : $type;
+        $type = $this->isStandardType($type) ? self::$std_type_alias[$type] : $type;
 
         class_exists($type) && is_a(new $type(), Type::class) ?: throw new ClassNotFoundException($type);
 
