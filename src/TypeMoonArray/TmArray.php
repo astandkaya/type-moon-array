@@ -75,11 +75,6 @@ class TmArray
         return array_keys($this->array);
     }
 
-    public function getStdTypeAlias(): array
-    {
-        return array_keys($this->std_type_alias);
-    }
-
 
     #[Publish, WritableCheck]
     private function convertType(string $type): void
