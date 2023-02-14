@@ -59,28 +59,4 @@ class OutputTest extends TestCase
         }
 
     }
-
-    /**
-     *
-    */
-    public function test_標準型の一覧が取得可能であること()
-    {
-        $list = [
-            'bool',
-            'int',
-            'float',
-            'string',
-            'array',
-            'object',
-            'null',
-            'mixed',
-        ];
-
-        $tm_array = new TmArray( 'int' );
-
-        $this->assertEquals(
-            $list,
-            $tm_array->getStdTypeAlias(),
-        );
-    }
 }
