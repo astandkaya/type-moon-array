@@ -28,6 +28,7 @@ class TmArray
         'object'    => \TypeMoonArray\Types\StdObject::class,
         'null'      => \TypeMoonArray\Types\StdNull::class,
         'mixed'     => \TypeMoonArray\Types\StdMixed::class,
+        'tmarray'   => \TypeMoonArray\Types\StdTmArray::class,
     ];
 
     private static ?Reflection $reflection = null;
