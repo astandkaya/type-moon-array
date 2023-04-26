@@ -19,7 +19,7 @@ use TypeMoonArray\Utility\Reflection;
 
 class TmArray
 {
-    private static array $std_type_alias = [
+    private static array $type_alias = [
         'bool'      => \TypeMoonArray\Types\StdBoolean::class,
         'int'       => \TypeMoonArray\Types\StdInteger::class,
         'float'     => \TypeMoonArray\Types\StdFloat::class,
@@ -28,6 +28,7 @@ class TmArray
         'object'    => \TypeMoonArray\Types\StdObject::class,
         'null'      => \TypeMoonArray\Types\StdNull::class,
         'mixed'     => \TypeMoonArray\Types\StdMixed::class,
+        'tmarray'   => \TypeMoonArray\Types\StdTmArray::class,
     ];
 
     private static ?Reflection $reflection = null;
@@ -71,17 +72,17 @@ class TmArray
         !(!$overwrite && in_array($key, self::getTypeAliasKeys())) ?: throw new DenyOverwriteAliasException($key);
         class_exists($type) && is_a(new $type(), Type::class) ?: throw new DenyTypeException();
 
-        self::$std_type_alias = array_merge(self::$std_type_alias, [$key => $type]);
+        self::$type_alias = array_merge(self::$type_alias, [$key => $type]);
     }
 
     public static function getTypeAlias(): array
     {
-        return self::$std_type_alias;
+        return self::$type_alias;
     }
 
     public static function getTypeAliasKeys(): array
     {
-        return array_keys(self::$std_type_alias);
+        return array_keys(self::$type_alias);
     }
 
 
@@ -155,13 +156,13 @@ class TmArray
 
     private function isStandardType(?string $type = null): bool
     {
-        return in_array($type ?? $this->type, array_keys(self::$std_type_alias));
+        return in_array($type ?? $this->type, array_keys(self::$type_alias));
     }
 
 
     private function convertStringToType(string $type): string
     {
-        $type = $this->isStandardType($type) ? self::$std_type_alias[$type] : $type;
+        $type = $this->isStandardType($type) ? self::$type_alias[$type] : $type;
 
         class_exists($type) && is_a(new $type(), Type::class) ?: throw new ClassNotFoundException($type);
 
